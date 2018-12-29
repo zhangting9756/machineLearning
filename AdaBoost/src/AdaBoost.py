@@ -18,21 +18,6 @@ def loadSimpData():
     classLabels = [1.0, 1.0, -1.0, -1.0, 1.0]
     return datMat,classLabels
 
-def loadDataSet1():
-                                                      #创建标签列表
-    fr = open(r'F:\Machine-Learning-master\Machine-Learning-master\AdaBoost\horseColicTraining2.txt') 
-    numFeat = len(open(r'F:\Machine-Learning-master\Machine-Learning-master\AdaBoost\horseColicTraining2.txt').readlines().split('\t'))                                           #打开文件   
-    dataMat = []                                                        #创建数据列表
-    labelMat = []   
-    for line in fr.readlines(): 
-        lineArr =[]                                                    #逐行读取
-        curLine = line.strip().split('\t')                                #去回车，放入列表
-        for i in range(numFeat -1):
-            lineArr.append(float(curLine[i]))
-        dataMat.append(lineArr)        #添加数据
-        labelMat.append(float(curLine[-1]))                                #添加标签
-    fr.close()                                                            #关闭文件
-    return dataMat, labelMat                                            #返回
 def loadDataSet(fileName):
     numFeat = len((open(fileName).readline().split('\t')))
     dataMat = []; labelMat = []
@@ -170,7 +155,7 @@ def adaClassify(datToClass,classifierArr):
     for i in range(len(classifierArr)):                                        #遍历所有分类器，进行分类
         classEst = stumpClassify(dataMatrix, classifierArr[i]['dim'], classifierArr[i]['thresh'], classifierArr[i]['ineq'])            
         aggClassEst += classifierArr[i]['alpha'] * classEst
-        print(aggClassEst)
+        #print(aggClassEst)
     return np.sign(aggClassEst)
 
 if __name__ == '__main__':
