@@ -93,6 +93,43 @@ def regErr(dataSet):
     """
     return np.var(dataSet[:,-1]) * np.shape(dataSet)[0]
 
+def linearSolve(dataSet):
+    """
+函数说明:模型树将数据格式化成目标变量Y和自变量X
+Parameters: dataSet - 数据集合
+Returns: ws, X, Y
+"""
+    m,n = np.shape(dataSet)
+    X = np.mat(np.ones((m, n)))
+    X[:,1:n] = dataSet[:,0:n-1]
+    Y = np.mat(dataSet[:, -1])
+    xTx = X.T*X
+    if np.linalg.det(xTx) == 0.0:
+        raise NameError('This matrix is singular, cannot do inverse, try increasing the second value of ops')
+    ws = xTx.I*(X.T * Y)
+    return ws, X, Y
+
+def modelLeaf(dataSet):
+    """
+函数说明:模型树生成叶结点
+Parameters: dataSet - 数据集合
+Returns: 目标变量的均值
+"""
+    ws = linearSolve(dataSet)[0]
+    return ws
+
+def modelErr(dataSet):
+    """
+函数说明:模型树误差估计函数
+Parameters:
+    dataSet - 数据集合
+Returns:
+    目标变量的总方差
+"""
+    ws,X,Y = linearSolve(dataSet)
+    yHat = X*ws
+    return np.sum(np.power(Y - yHat, 2))
+        
 def chooseBestSplit(dataSet, leafType = regLeaf, errType = regErr, ops = (1,4)):
     """
     函数说明:找到数据的最佳二元切分方式函数
@@ -246,6 +283,65 @@ def prune(tree, testData):
         else: return tree
     else: return tree
     
+def regTreeEval(model, inDat):
+    """
+函数说明:回归树，返回预测值
+Parameters:
+    model - 叶子节点（即预测值）
+    inDat - 测试数据
+Returns: 预测值
+"""
+    return float(model)
+
+def modelTreeEval(model, inDat):
+    """
+函数说明:模型树，返回预测值
+Parameters:
+    model - 叶子节点（线性模型参数）
+    inDat - 测试数据
+Returns: 预测值
+"""
+    n = np.shape(inDat)[1]
+    X = np.mat(np.ones((1,n+1)))
+    X[:,1:n+1]=inDat
+    return float(X*model)
+ 
+def treeForeCast(tree, inData, modelEval=regTreeEval):
+    """
+函数说明:返回预测值
+Parameters:
+    tree - 树
+    inData - 测试数据
+    modelEval - 回归树还是模型树
+Returns: 预测值
+"""
+    if not isTree(tree): return modelEval(tree, inData)
+    if inData[tree['spInd']] > tree['spVal']:
+        if isTree(tree['left']): 
+            return treeForeCast(tree['left'], inData, modelEval)
+        else: 
+            return modelEval(tree['left'], inData)
+    else:
+        if isTree(tree['right']): 
+            return treeForeCast(tree['right'], inData, modelEval)
+        else:
+            return modelEval(tree['right'], inData)  
+        
+def createForeCast(tree, testData, modelEval=regTreeEval):
+    """
+函数说明:返回预测值
+Parameters:
+    tree - 树
+    testData - 测试集
+    modelEval - 回归树还是模型树
+Returns: yHat
+"""
+    m=len(testData)
+    yHat = np.mat(np.zeros((m,1)))
+    for i in range(m):
+        yHat[i,0] = treeForeCast(tree, np.mat(testData[i]), modelEval)
+    return yHat 
+
 if __name__ == '__main__':
     print('剪枝前:')
     train_filename = 'F:\Machine-Learning-master\Machine-Learning-master\Regression Trees\ex2.txt'
