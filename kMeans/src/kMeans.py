@@ -69,7 +69,7 @@ def biKmeans(dataSet, k, distMeas=distEclud):
     centroid0 = mean(dataSet, axis=0).tolist()[0]
     centList =[centroid0] #create a list with one centroid,存放每个特征的均值
     for j in range(m):#calc initial Error
-        clusterAssment[j,1] = distMeas(mat(centroid0), dataSet[j,:])**2
+        clusterAssment[j,1] = distMeas(mat(centroid0), dataSet[j,:])**2    #存放每个样本距均值的距离
     while (len(centList) < k):
         lowestSSE = inf
         for i in range(len(centList)):
@@ -80,8 +80,8 @@ def biKmeans(dataSet, k, distMeas=distEclud):
             print "sseSplit, and notSplit: ",sseSplit,sseNotSplit
             if (sseSplit + sseNotSplit) < lowestSSE:
                 bestCentToSplit = i
-                bestNewCents = centroidMat
-                bestClustAss = splitClustAss.copy()
+                bestNewCents = centroidMat             #类质心
+                bestClustAss = splitClustAss.copy()    #每个样本属于哪个类
                 lowestSSE = sseSplit + sseNotSplit
         bestClustAss[nonzero(bestClustAss[:,0].A == 1)[0],0] = len(centList) #change 1 to 3,4, or whatever
         bestClustAss[nonzero(bestClustAss[:,0].A == 0)[0],0] = bestCentToSplit
@@ -96,7 +96,8 @@ def biKmeans(dataSet, k, distMeas=distEclud):
 if __name__=='__main__':
     dataMat = mat(loadData('testSet.txt'))
     myCentroids, clustAssing = biKmeans(dataMat, 4)
-    myCentroids, clustAssing = kMeans(dataMat, 4)
-    print('K均值算法，质心：%r' % myCentroids)
-    print('K均值算法，索引以及储存误差： %r' % clustAssing)
+    myCentroids1, clustAssing1 = kMeans(dataMat, 4)
+    print('K均值算法，质心：%r' % myCentroids1)
+    print('K二分算法，质心：%r' % myCentroids)
+    #print('K均值算法，索引以及储存误差： %r' % clustAssing)
     
